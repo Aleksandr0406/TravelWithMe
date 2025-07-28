@@ -5,4 +5,8 @@
 //  Created by 1111 on 28.07.2025.
 //
 
-import Foundation
+import SwiftUI
+
+struct UserAgreementViewModel {
+    @Binding var stateProperty: StateProperties
+}

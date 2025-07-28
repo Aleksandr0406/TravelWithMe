@@ -6,3 +6,8 @@
 //
 
 import Foundation
+import SwiftUI
+
+struct SettingsViewModel {
+    @Binding var stateProperty: StateProperties
+}

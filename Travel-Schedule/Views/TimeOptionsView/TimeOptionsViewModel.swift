@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct TimeOptionsViewModel {
+    @State var isTransferOptionYesSelect: Bool = false
+    @State var isTransferOptionNoSelect: Bool = false
+    
     @Binding var stateProperty: StateProperties
     @Binding var loadedData: LoadedData
     
@@ -74,5 +77,8 @@ struct TimeOptionsViewModel {
         } else {
             stateProperty.showTimeSpecifyRedDot = true
         }
+    }
+    
+    func filterSegmentsWithTransfers(hasTransfers: Bool) {
     }
 }

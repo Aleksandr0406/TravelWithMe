@@ -10,7 +10,6 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 import SwiftUI
 
-
 typealias NearestStations = Components.Schemas.Stations
 typealias StationsSchedule = Components.Schemas.StationsSchedule
 typealias OnStationsSchedule = Components.Schemas.OnStationsSchedule
@@ -31,7 +30,7 @@ protocol TravelScheduleServiceProtocol {
     func getCopyright(format: String) async throws -> Copyright
 }
 
-final class TravelScheduleService: TravelScheduleServiceProtocol {
+actor TravelScheduleService: TravelScheduleServiceProtocol {
     private let client: Client
     private let apikey: String
     
@@ -93,10 +92,35 @@ final class TravelScheduleService: TravelScheduleServiceProtocol {
     }
     
     func getStationsList() async throws -> StationsList {
-        let response = try await client.getStationsList(query: .init(
-            apikey: apikey
-        ))
-        return try response.ok.body.json
+        do {
+            let response = try await client.getStationsList(query: .init(
+                apikey: apikey
+            ))
+            
+            let body = try response.ok.body.html
+            var buffer = Data()
+            for try await chunk in body {
+                buffer.append(contentsOf: chunk)
+            }
+            let decoder = JSONDecoder()
+            do {
+                return try decoder.decode(StationsList.self, from: buffer)
+            } catch {
+                print("Decoding error:", error)
+                throw error
+            }
+        } catch let urlError as URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .timedOut:
+                throw CustomError.InternetError
+            default:
+                print("URLError:", urlError)
+                throw CustomError.ServerError
+            }
+        } catch {
+            print("Unknown error:", error)
+            throw CustomError.ServerError
+        }
     }
     
     func getCopyright(format: String) async throws -> Copyright {
@@ -106,4 +130,12 @@ final class TravelScheduleService: TravelScheduleServiceProtocol {
         ))
         return try response.ok.body.json
     }
+}
+
+enum CustomError: Error {
+    case JsonFailed(String)
+    case ClientNil
+    case ServerError
+    case InternetError
+    case notFound
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		332CC20E2E358A7B00FD5C33 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 332CC20D2E358A7B00FD5C33 /* SDWebImageSwiftUI */; };
 		333359882DB92DBB00D0CD16 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 333359872DB92DBB00D0CD16 /* OpenAPIURLSession */; };
 		3333598B2DB92DCB00D0CD16 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 3333598A2DB92DCB00D0CD16 /* OpenAPIRuntime */; };
 /* End PBXBuildFile section */
@@ -41,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				332CC20E2E358A7B00FD5C33 /* SDWebImageSwiftUI in Frameworks */,
 				3333598B2DB92DCB00D0CD16 /* OpenAPIRuntime in Frameworks */,
 				333359882DB92DBB00D0CD16 /* OpenAPIURLSession in Frameworks */,
 			);
@@ -96,6 +98,7 @@
 			packageProductDependencies = (
 				333359872DB92DBB00D0CD16 /* OpenAPIURLSession */,
 				3333598A2DB92DCB00D0CD16 /* OpenAPIRuntime */,
+				332CC20D2E358A7B00FD5C33 /* SDWebImageSwiftUI */,
 			);
 			productName = "Travel-Schedule";
 			productReference = 33B0303E2DB69AA1003991C0 /* Travel-Schedule.app */;
@@ -129,6 +132,7 @@
 				33457DD42DB7F74E0002477F /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
 				333359862DB92DBB00D0CD16 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
 				333359892DB92DCB00D0CD16 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
+				332CC20C2E358A7B00FD5C33 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 33B0303F2DB69AA1003991C0 /* Products */;
@@ -379,6 +383,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		332CC20C2E358A7B00FD5C33 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.3;
+			};
+		};
 		333359862DB92DBB00D0CD16 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
@@ -406,6 +418,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		332CC20D2E358A7B00FD5C33 /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 332CC20C2E358A7B00FD5C33 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
+		};
 		333359872DB92DBB00D0CD16 /* OpenAPIURLSession */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 333359862DB92DBB00D0CD16 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;

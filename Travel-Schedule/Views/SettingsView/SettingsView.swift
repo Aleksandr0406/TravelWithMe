@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Binding var stateProperty: StateProperties
+    let viewModel: SettingsViewModel
     
     var body: some View {
         VStack {
-            DarkThemeHStackView(stateProperty: $stateProperty)
-            UserAgreementHStackView(stateProperty: $stateProperty)
+            DarkThemeHStackView(viewModel: viewModel)
+            UserAgreementHStackView(viewModel: viewModel)
             Spacer()
             Text("Приложение использует API «Яндекс.Расписания»\nВерсия 1.0 (beta)")
                 .font(.system(size: 12, weight: .regular))
@@ -26,7 +26,8 @@ struct SettingsView: View {
 
 private struct DarkThemeHStackView: View {
     @State private var isEnabled: Bool = false
-    @Binding var stateProperty: StateProperties
+    
+    let viewModel: SettingsViewModel
     
     var body: some View {
         HStack {
@@ -37,7 +38,7 @@ private struct DarkThemeHStackView: View {
             Toggle("", isOn: $isEnabled)
                 .onChange(of: isEnabled)
             {
-                stateProperty.colorScheme = isEnabled ? .dark : .light
+                viewModel.stateProperty.colorScheme = isEnabled ? .dark : .light
             }
         }
         .padding([.leading, .trailing], 16)
@@ -45,7 +46,7 @@ private struct DarkThemeHStackView: View {
 }
 
 private struct UserAgreementHStackView: View {
-    @Binding var stateProperty: StateProperties
+    let viewModel: SettingsViewModel
     
     var body: some View {
         HStack {
@@ -56,13 +57,9 @@ private struct UserAgreementHStackView: View {
             Image(systemName: "chevron.right")
         }
         .onTapGesture {
-            stateProperty.path.append("UserAgreement")
+            viewModel.stateProperty.path.append("UserAgreement")
         }
         .padding(.leading, 16)
         .padding(.trailing, 18)
     }
-}
-
-#Preview {
-    SettingsView(stateProperty: .constant(StateProperties()))
 }

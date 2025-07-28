@@ -340,15 +340,15 @@ paths:
           required: true
           schema:
             type: string
-        - name: lang
-          in: query
-          description: Язык возвращаемой информации
-          required: false
-          schema:
-            type: string
         - name: format
           in: query
           description: Формат ответа
+          required: false
+          schema:
+            type: string
+        - name: lang
+          in: query
+          description: Язык возвращаемой информации
           required: false
           schema:
             type: string
@@ -356,7 +356,7 @@ paths:
         "200":
           description: success
           content:
-            application/json:
+            text/html:
               schema:
                 $ref: '#/components/schemas/StationsList'
   /v3.0/copyright/:
@@ -428,7 +428,7 @@ components:
                 type: string
               short_title:
                 type: string
-              transport_title:
+              transport_type:
                 type: string
               lat:
                 type: number
@@ -436,6 +436,7 @@ components:
                 type: number
               type:
                 type: string
+                
     StationsSchedule:
       type: object
       properties:
@@ -766,6 +767,7 @@ components:
                   type: string
                 title:
                   type: string
+                  
     OnStationsSchedule:
       type: object
       properties:
@@ -928,6 +930,7 @@ components:
                 type: string
               title:
                 type: string
+                
     RouteStations:
       type: object
       properties:
@@ -1038,6 +1041,7 @@ components:
               type: string
         express_type:
           type: string
+          
     NearestCity:
       type: object
       properties:
@@ -1057,6 +1061,7 @@ components:
           type: number
         type:
           type: string
+          
     CarrierInfo:
       type: object
       properties:
@@ -1090,6 +1095,7 @@ components:
                 type: string
               email:
                 type: string
+                
     StationsList:
       type: object
       properties:
@@ -1101,49 +1107,53 @@ components:
               regions:
                 type: array
                 items:
-                 type: object
-                 properties:
-                   settlements:
-                     type: array
-                     items:
-                       type: object
-                       properties:
-                           title:
-                             type: string
-                           codes:
-                             type: object
-                             properties:
-                               yandex_code:
-                                 type: string
-                           stations:
-                             type: array
-                             items:
-                               type: object
-                               properties:
-                                 direction:
-                                   type: string
-                                 codes:
-                                   type: object
-                                   properties:
-                                     yandex_code:
-                                       type: string
-                                 station_type:
-                                   type: string
-                                 title:
-                                   type: string
-                                 longitude:
-                                   type: number
-                                 transport_type:
-                                   type: string
-                                 latitude:
-                                   type: number
-                   codes:
-                     type: object
-                     properties:
-                       yandex_code:
-                         type: string
-                   title:
-                     type: string
+                  type: object
+                  properties:
+                    settlements:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          codes:
+                            type: object
+                            properties:
+                              yandex_code:
+                                type: string
+                          stations:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                direction:
+                                  type: string
+                                codes:
+                                  type: object
+                                  properties:
+                                    yandex_code:
+                                      type: string
+                                station_type:
+                                  type: string
+                                title:
+                                  type: string
+                                longitude:
+                                  oneOf:
+                                  - type: number
+                                  - type: string
+                                transport_type:
+                                  type: string
+                                latitude:
+                                  oneOf:
+                                  - type: number
+                                  - type: string
+                    codes:
+                      type: object
+                      properties:
+                        yandex_code:
+                          type: string
+                    title:
+                      type: string
               codes:
                 type: object
                 properties:
@@ -1151,6 +1161,7 @@ components:
                     type: string
               title:
                 type: string
+                
     Copyright:
       type: object
       properties:

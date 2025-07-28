@@ -8,11 +8,28 @@
 import SwiftUI
 
 struct CarrierInfoView: View {
+    let viewModel: CarrierInfoViewModel
+    
     var body: some View {
         VStack(spacing: 0) {
-            Image(.carrierIconInfo)
-                .padding([.top, .bottom], 16)
-            Text("ОАО ≪РЖД≫")
+            AsyncImage(url: URL(string: viewModel.loadedData.singleSegment?.logo ?? "")) { state in
+                switch state {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .cornerRadius(24)
+                        .padding([.top, .bottom], 16)
+                case .failure:
+                    Image(.placeholder)
+                case .empty:
+                    ProgressView()
+                @unknown default:
+                    EmptyView()
+                }
+            }
+            Text(viewModel.loadedData.singleSegment?.carrierTitle ?? "Ошибка")
                 .font(.system(size: 24, weight: .bold))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 16)
@@ -20,7 +37,7 @@ struct CarrierInfoView: View {
                 Text("E-mail")
                     .font(.system(size: 17, weight: .regular))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("i.lozgkina@yandex.ru")
+                Text(viewModel.loadedData.singleSegment?.carrierEmail ?? "Нет email")
                     .font(.system(size: 12, weight: .regular))
                     .accentColor(.blue)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -30,7 +47,7 @@ struct CarrierInfoView: View {
                 Text("Телефон")
                     .font(.system(size: 17, weight: .regular))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("+7(904) 329-27-71")
+                Text(viewModel.loadedData.singleSegment?.carrierPhone ?? "Нет телефона")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.blue)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -42,8 +59,4 @@ struct CarrierInfoView: View {
         .toolbarRole(.editor)
         .navigationTitle("Информация о перевозчике")
     }
-}
-
-#Preview {
-    CarrierInfoView()
 }

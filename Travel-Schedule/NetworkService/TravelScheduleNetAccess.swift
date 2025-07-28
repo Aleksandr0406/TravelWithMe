@@ -5,7 +5,6 @@
 //  Created by 1111 on 04.07.2025.
 //
 
-import Foundation
 import OpenAPIURLSession
 import SwiftUI
 
@@ -25,18 +24,6 @@ struct TravelScheduleNetAccess {
     
     @Binding var loadedData: LoadedData
     
-    //    func getNearestStations() {
-    //        guard let client else { return }
-    //        let service = TravelScheduleService(
-    //            client: client,
-    //            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
-    //        )
-    //
-    //        Task {
-    //            let stations = try await service.getNearestStations(lat: 59.9386300, lng: 30.3141300, distance: 50)
-    //                }
-    //            }
-    
     func getBetweenStationsSchedule(codeIdFrom: String, codeIdTo: String) {
         guard let client else { return }
         let service = TravelScheduleService(
@@ -47,6 +34,7 @@ struct TravelScheduleNetAccess {
         Task {
             let betweenStationsSchedule = try await service.getBetweenStationsSchedule(from: codeIdFrom, to: codeIdTo)
             guard let segments = betweenStationsSchedule.segments else { return }
+            
             segments.forEach {
                 let departureDate = $0.departure
                 let arrivalDate = $0.arrival
@@ -55,6 +43,7 @@ struct TravelScheduleNetAccess {
                 let startDate = $0.start_date
                 let logoSmall = $0.thread?.carrier?.logo_svg
                 let logo = $0.thread?.carrier?.logo
+                let hasTransfer = $0.has_transfers
                 
                 let carrierPhone = $0.thread?.carrier?.phone
                 let carrierEmail = $0.thread?.carrier?.email
@@ -95,64 +84,11 @@ struct TravelScheduleNetAccess {
                     carrierEmail: carrierEmail ?? "-//-",
                     startDate: dateStartString,
                     logoSmall: logoSmall ?? "",
-                    logo: logo ?? ""
+                    logo: logo ?? "",
+                    hasTransfer: hasTransfer ?? false
                 )
                 loadedData.segments.append(segment)
             }
-            print(loadedData.segments.count)
-            loadedData.segments.forEach { print($0.logoSmall) }
-        }
-    }
-    
-    func getOnStationsSchedule() {
-        guard let client = client else { return }
-        let service = TravelScheduleService(
-            client: client,
-            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
-        )
-        
-        Task {
-            let onStationsSchedule = try await service.getOnStationsSchedule(station: "s9600213")
-            print(onStationsSchedule)
-        }
-    }
-    
-    func getRouteStations() {
-        guard let client = client else { return }
-        let service = TravelScheduleService(
-            client: client,
-            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
-        )
-        
-        Task {
-            let routeStations = try await service.getRouteStations(uid: "")
-            print(routeStations)
-        }
-    }
-    
-    func getNearestCity() {
-        guard let client = client else { return }
-        let service = TravelScheduleService(
-            client: client,
-            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
-        )
-        
-        Task {
-            let nearestCity = try await service.getNearestCity(lat: 59.864177, lng: 30.319163)
-            print(nearestCity)
-        }
-    }
-    
-    func getCarrierInfo() {
-        guard let client = client else { return }
-        let service = TravelScheduleService(
-            client: client,
-            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
-        )
-        
-        Task {
-            let carrierInfo = try await service.getCarrierInfo(code: "112")
-            print(carrierInfo)
         }
     }
     
@@ -169,7 +105,6 @@ struct TravelScheduleNetAccess {
             for country in countries {
                 if country.title == "Россия" {
                     guard let regions = country.regions else { return }
-//                    regions.forEach { print($0.title) }
                     for region in regions {
                         if region.title == "Москва и Московская область" || region.title == "Санкт-Петербург и Ленинградская область" {
                             guard let settlements = region.settlements else { return }
@@ -197,19 +132,6 @@ struct TravelScheduleNetAccess {
                     }
                 }
             }
-        }
-    }
-    
-    func getCopyright() {
-        guard let client = client else { return }
-        let service = TravelScheduleService(
-            client: client,
-            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
-        )
-        
-        Task {
-            let copyright = try await service.getCopyright(format: "json")
-            print(copyright.copyright?.text ?? "")
         }
     }
 }

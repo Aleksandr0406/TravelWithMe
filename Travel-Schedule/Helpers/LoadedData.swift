@@ -25,6 +25,7 @@ struct Segment: Hashable {
     var startDate: String
     var logoSmall: String
     var logo: String
+    var hasTransfer: Bool
 }
 
 struct Settlement {

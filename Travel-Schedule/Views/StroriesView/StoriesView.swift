@@ -2,15 +2,15 @@ import SwiftUI
 import Combine
 
 struct StoriesView: View {
-    let viewModel: StoriesViewModel
+    @ObservedObject var mainViewModel: MainScreenViewModel
     
     var body: some View {
-        TabView(selection: viewModel.$stateProperty.tabSelection) {
-            FullStoryConstructorView(fullStoryIndex: 0, viewModel: viewModel)
+        TabView(selection: $mainViewModel.stateProperty.tabSelection) {
+            FullStoryConstructorView(fullStoryIndex: 0, mainViewModel: mainViewModel)
                 .tag(0)
-            FullStoryConstructorView(fullStoryIndex: 1, viewModel: viewModel)
+            FullStoryConstructorView(fullStoryIndex: 1, mainViewModel: mainViewModel)
                 .tag(1)
-            FullStoryConstructorView(fullStoryIndex: 2, viewModel: viewModel)
+            FullStoryConstructorView(fullStoryIndex: 2, mainViewModel: mainViewModel)
                 .tag(2)
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -33,12 +33,12 @@ private struct FullStoryConstructorView: View {
         }
     }
     
-    let viewModel: StoriesViewModel
     
     @State private var indexCalc = 0
     @State var progress: CGFloat = 0
     @State var cancellable: Cancellable?
     @State var timer: Timer.TimerPublisher
+    @ObservedObject var mainViewModel: MainScreenViewModel
     
     private var stories: [FullStory] = [.fullStory1, .fullStory2, .fullStory3]
     private let configuration: Configuration
@@ -47,13 +47,12 @@ private struct FullStoryConstructorView: View {
     private var currentStoryIndex: Int { Int(progress * CGFloat(stories[fullStoryIndex].stories.count)) }
     
     init(
-        fullStoryIndex: Int,
-        viewModel: StoriesViewModel
+        fullStoryIndex: Int, mainViewModel: MainScreenViewModel
     ) {
         self.fullStoryIndex = fullStoryIndex
         configuration = Configuration(storiesCount: stories[fullStoryIndex].stories.count)
         timer = Self.createTimer(configuration: configuration)
-        self.viewModel = viewModel
+        _mainViewModel = ObservedObject(wrappedValue: mainViewModel)
     }
     
     var body: some View {
@@ -77,7 +76,7 @@ private struct FullStoryConstructorView: View {
                         resetTimer()
                     }
             }
-            CloseButton(action: { viewModel.stateProperty.isPresentingStory = false })
+            CloseButton(action: { mainViewModel.stateProperty.isPresentingStory = false })
                 .padding(.top, 57)
                 .padding(.trailing, 12)
         }
@@ -102,11 +101,11 @@ private struct FullStoryConstructorView: View {
             withAnimation {
                 progress = CGFloat(nextStoryIndex) / CGFloat(storiesCount)
             }
-        } else if viewModel.stateProperty.indexOfGroupStories < stories.count - 1 {
-            viewModel.stateProperty.tabSelection = viewModel.stateProperty.indexOfGroupStories + 1
-            viewModel.stateProperty.indexOfGroupStories += 1
+        } else if mainViewModel.stateProperty.indexOfGroupStories < stories.count - 1 {
+            mainViewModel.stateProperty.tabSelection = mainViewModel.stateProperty.indexOfGroupStories + 1
+            mainViewModel.stateProperty.indexOfGroupStories += 1
         } else {
-            viewModel.stateProperty.isPresentingStory = false
+            mainViewModel.stateProperty.isPresentingStory = false
         }
     }
     
@@ -131,11 +130,11 @@ private struct FullStoryConstructorView: View {
             withAnimation {
                 progress = CGFloat(nextStoryIndex) / CGFloat(storiesCount)
             }
-        } else if viewModel.stateProperty.indexOfGroupStories < stories.count - 1 {
-            viewModel.stateProperty.tabSelection = viewModel.stateProperty.indexOfGroupStories + 1
-            viewModel.stateProperty.indexOfGroupStories += 1
+        } else if mainViewModel.stateProperty.indexOfGroupStories < stories.count - 1 {
+            mainViewModel.stateProperty.tabSelection = mainViewModel.stateProperty.indexOfGroupStories + 1
+            mainViewModel.stateProperty.indexOfGroupStories += 1
         } else {
-            viewModel.stateProperty.isPresentingStory = false
+            mainViewModel.stateProperty.isPresentingStory = false
         }
     }
     
@@ -152,11 +151,11 @@ private struct FullStoryConstructorView: View {
             withAnimation {
                 progress = CGFloat(previousStoryIndex) / CGFloat(storiesCount)
             }
-        } else if viewModel.stateProperty.indexOfGroupStories > 0 {
-            viewModel.stateProperty.tabSelection = viewModel.stateProperty.indexOfGroupStories - 1
-            viewModel.stateProperty.indexOfGroupStories -= 1
+        } else if mainViewModel.stateProperty.indexOfGroupStories > 0 {
+            mainViewModel.stateProperty.tabSelection = mainViewModel.stateProperty.indexOfGroupStories - 1
+            mainViewModel.stateProperty.indexOfGroupStories -= 1
         } else {
-            viewModel.stateProperty.isPresentingStory = false
+            mainViewModel.stateProperty.isPresentingStory = false
         }
     }
     

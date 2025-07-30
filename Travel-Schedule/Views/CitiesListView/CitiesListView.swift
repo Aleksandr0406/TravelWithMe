@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct CitiesListView: View {
-    let viewModel: CitiesListViewModel
+    @StateObject private var viewModel: CitiesListViewModel = CitiesListViewModel()
+    @Binding var path: NavigationPath
     
     var body: some View {
-        VStack(spacing: 0) {
-            CitiesOptionView(viewModel: viewModel)
+        VStack(spacing: .zero) {
+            CitiesOptionView(viewModel: viewModel, path: $path)
         }
         .toolbarRole(.editor)
         .navigationTitle("Выбор города")
@@ -20,19 +21,22 @@ struct CitiesListView: View {
 }
 
 private struct CitiesOptionView: View {
-    let viewModel: CitiesListViewModel
-    
     @State private var searchCities = ""
+    @ObservedObject var viewModel: CitiesListViewModel
+    @Binding var path: NavigationPath
     
     private var cities: [String] {
-        let citiesWithNoEmpty = viewModel.loadedData.settlement.filter { !$0.title.isEmpty }
+        let citiesWithNoEmpty = viewModel.loadedData.settlements.filter { !$0.title.isEmpty }
         let sortedCities = citiesWithNoEmpty.sorted { $0.title < $1.title }
         let citiesTitles = sortedCities.map { $0.title  }
         return citiesTitles
     }
     
     private var filteredCities: [String] {
-        guard !searchCities.isEmpty else { return cities }
+        guard !searchCities.isEmpty else {
+            print("error")
+            return cities
+        }
         return cities.filter { $0.localizedCaseInsensitiveContains((searchCities)) }
     }
     
@@ -42,7 +46,7 @@ private struct CitiesOptionView: View {
                 Text("Начните вводить название города")
                     .font(.system(size: 24, weight: .bold))
             } else {
-                ListView(viewModel: viewModel, filteredCities: filteredCities)
+                ListView(viewModel: viewModel, path: $path, filteredCities: filteredCities)
                     .listStyle(.plain)
             }
         }
@@ -55,7 +59,9 @@ private struct CitiesOptionView: View {
 }
 
 private struct ListView: View {
-    let viewModel: CitiesListViewModel
+    @ObservedObject var viewModel: CitiesListViewModel
+    @Binding var path: NavigationPath
+    
     var filteredCities: [String]
     
     var body: some View {
@@ -69,7 +75,7 @@ private struct ListView: View {
             }
             .listRowSeparator(.hidden)
             .onTapGesture {
-                viewModel.stateProperty.path.append(city)
+                path.append(city)
             }
         }
     }

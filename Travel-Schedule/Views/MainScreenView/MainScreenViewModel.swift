@@ -7,21 +7,17 @@
 
 import SwiftUI
 
-struct MainScreenViewModel {
-    @State var cityHelp: String = ""
-    @State var stationHelp: String = ""
-    @State var indexesOfViewStories: [Int] = []
-    
-    @Binding var stateProperty: StateProperties
-    @Binding var loadedData: LoadedData
+final class MainScreenViewModel: ObservableObject {
+    @Published var cityHelp: String = ""
+    @Published var stationHelp: String = ""
+    @Published var indexesOfViewStories: [Int] = []
+    @Published var stateProperty: StateProperties = StateProperties()
+    @Published var loadedData: LoadedData = LoadedData()
     
     let storiesThemes: [UIImage] = [
         UIImage(resource: .mainTheme1),
         UIImage(resource: .mainTheme2),
         UIImage(resource: .mainTheme3)
     ]
-    
-    var finalDestination: String {
-        return stateProperty.cityFrom + " (" + (stateProperty.stationFrom ?? "") + ")"
-    }
 }
+

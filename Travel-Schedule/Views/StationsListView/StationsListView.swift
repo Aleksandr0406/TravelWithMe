@@ -8,12 +8,15 @@
 import SwiftUI
 
 struct StationsListView: View {
-    let viewModel: StationsListViewModel
+    @StateObject private var viewModel: StationsListViewModel = StationsListViewModel()
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
+    
     var city: String
     
     var body: some View {
-        VStack(spacing: 0) {
-            StationsView(viewModel: viewModel, cityTitle: city)
+        VStack(spacing: .zero) {
+            StationsView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel, path: $path, cityTitle: city)
         }
         .toolbarRole(.editor)
         .navigationTitle("Выбор станции")
@@ -21,12 +24,13 @@ struct StationsListView: View {
 }
 
 private struct StationsView: View {
-    let viewModel: StationsListViewModel
-    
     @State private var searchStations = ""
+    @ObservedObject var viewModel: StationsListViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     private var stations: [Station] {
-        let city: Settlement = viewModel.loadedData.settlement.first { $0.title == cityTitle } ?? Settlement(
+        let city: Settlement = viewModel.loadedData.settlements.first { $0.title == cityTitle } ?? Settlement(
             title: "",
             code: "",
             stations: []
@@ -37,7 +41,10 @@ private struct StationsView: View {
     var cityTitle: String
     
     var filteredStations: [Station] {
-        guard !searchStations.isEmpty else { return stations }
+        guard !searchStations.isEmpty else {
+            print("error")
+            return stations
+        }
         return stations.filter { $0.name.localizedCaseInsensitiveContains((searchStations)) }
     }
     
@@ -56,22 +63,22 @@ private struct StationsView: View {
                             .foregroundColor(.darkWhite)
                     }
                     .onTapGesture {
-                        if viewModel.stateProperty.isFromPointSelected && viewModel.stateProperty.isToPointSelected == false {
-                            viewModel.stateProperty.cityFrom = cityTitle
-                            viewModel.stateProperty.stationFrom = station.name
-                            viewModel.stateProperty.isFromPointSelected = false
-                            viewModel.stateProperty.isFromPointShow = true
-                            viewModel.loadedData.codeIdFrom = station.codeId
+                        if tabScreenViewModel.isFromPointSelected && tabScreenViewModel.isToPointSelected == false {
+                            tabScreenViewModel.cityFrom = cityTitle
+                            tabScreenViewModel.stationFrom = station.name
+                            tabScreenViewModel.isFromPointSelected = false
+                            tabScreenViewModel.isFromPointShow = true
+                            tabScreenViewModel.loadedData.codeIdFrom = station.codeId
                         }
                         
-                        if viewModel.stateProperty.isFromPointSelected == false && viewModel.stateProperty.isToPointSelected {
-                            viewModel.stateProperty.cityTo = cityTitle
-                            viewModel.stateProperty.stationTo = station.name
-                            viewModel.stateProperty.isToPointSelected = false
-                            viewModel.stateProperty.isToPointShow = true
-                            viewModel.loadedData.codeIdTo = station.codeId
+                        if tabScreenViewModel.isFromPointSelected == false && tabScreenViewModel.isToPointSelected {
+                            tabScreenViewModel.cityTo = cityTitle
+                            tabScreenViewModel.stationTo = station.name
+                            tabScreenViewModel.isToPointSelected = false
+                            tabScreenViewModel.isToPointShow = true
+                            tabScreenViewModel.loadedData.codeIdTo = station.codeId
                         }
-                        viewModel.stateProperty.path.removeLast(viewModel.stateProperty.path.count)
+                        path.removeLast(path.count)
                     }
                     .listRowSeparator(.hidden)
                 }

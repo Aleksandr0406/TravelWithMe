@@ -8,5 +8,5 @@
 import SwiftUI
 
 struct UserAgreementViewModel {
-    @Binding var stateProperty: StateProperties
+    let userAgreementURL = "https://yandex.ru/legal/practicum_offer/"
 }

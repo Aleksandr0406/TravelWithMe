@@ -9,11 +9,11 @@ import SwiftUI
 import WebKit
 
 struct UserAgreementView: View {
-    let viewModel: UserAgreementViewModel
+    let viewModel: UserAgreementViewModel = UserAgreementViewModel()
     
     var body: some View {
         Group {
-            if let url = URL(string: "https://yandex.ru/legal/practicum_offer/") {
+            if let url = URL(string: viewModel.userAgreementURL) {
                 WebView(url: url)
             }
         }

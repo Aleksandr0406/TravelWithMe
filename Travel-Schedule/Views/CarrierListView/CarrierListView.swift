@@ -9,26 +9,29 @@ import SwiftUI
 import SDWebImageSwiftUI
 
 struct CarrierListView: View {
-    let viewModel: CarrierListViewModel
+    @StateObject private var viewModel: CarrierListViewModel = CarrierListViewModel()
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     private var finalDestinationTo: String {
-        return viewModel.stateProperty.cityTo + " (" + (viewModel.stateProperty.stationTo ?? "") + ")"
+        tabScreenViewModel.finalDestinationTo
     }
     
     private var finalDestinationFrom: String {
-        return viewModel.stateProperty.cityFrom + " (" + (viewModel.stateProperty.stationFrom ?? "") + ")"
+        tabScreenViewModel.finalDestinationFrom
     }
     
     var segments: [Segment] {
-        if viewModel.stateProperty.showTimeSpecifyRedDot {
-            viewModel.stateProperty.filteredSegments
+        if tabScreenViewModel.showTimeSpecifyRedDot {
+            return tabScreenViewModel.filteredSegments
         } else {
-            viewModel.loadedData.segments
+            viewModel.loadSegments(codeIdFrom: tabScreenViewModel.loadedData.codeIdFrom, codeIdTo: tabScreenViewModel.loadedData.codeIdTo)
+            return viewModel.loadedData.segments
         }
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: .zero) {
             Text(finalDestinationFrom + "→" + finalDestinationTo)
                 .font(.system(size: 24, weight: .bold))
                 .accentColor(.black)
@@ -39,7 +42,7 @@ struct CarrierListView: View {
                     SegmentCarrierView(segment: carrier)
                         .onTapGesture {
                             viewModel.loadedData.singleSegment = carrier
-                            viewModel.stateProperty.path.append("CarrierInfo")
+                            path.append("CarrierInfo")
                         }
                 }
                 .frame(maxWidth: .infinity)
@@ -51,9 +54,9 @@ struct CarrierListView: View {
                     .font(.system(size: 24, weight: Font.Weight.bold))
                 Spacer()
             }
-            Button(action: { viewModel.stateProperty.path.append("TimeOptions") }) {
+            Button(action: { path.append("TimeOptions") }) {
                 Text("Уточнить время")
-                if viewModel.stateProperty.showTimeSpecifyRedDot {
+                if tabScreenViewModel.showTimeSpecifyRedDot {
                     Image(.timeSpecifyDot)
                         .frame(width: 8, height: 8)
                 }
@@ -79,8 +82,8 @@ private struct SegmentCarrierView: View, Hashable {
                 .frame(maxWidth: .infinity)
                 .frame(height: 104)
                 .foregroundStyle(.lightGr)
-            VStack(spacing: 0) {
-                HStack(spacing: 0) {
+            VStack(spacing: .zero) {
+                HStack(spacing: .zero) {
                     if !segment.logoSmall.isEmpty {
                         WebImage(url: URL(string: segment.logoSmall))
                             .resizable()
@@ -92,7 +95,7 @@ private struct SegmentCarrierView: View, Hashable {
                             .frame(width: 38, height: 38)
                             .padding(.trailing, 8)
                     }
-                    VStack(spacing: 0) {
+                    VStack(spacing: .zero) {
                         Text(segment.carrierTitle)
                             .font(.system(size: 17, weight: .regular))
                             .foregroundStyle(.allBlack)

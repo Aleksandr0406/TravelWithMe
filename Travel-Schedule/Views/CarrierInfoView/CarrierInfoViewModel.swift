@@ -5,8 +5,8 @@
 //  Created by 1111 on 28.07.2025.
 //
 
-import SwiftUI
+import Foundation
 
-struct CarrierInfoViewModel {
-    @Binding var loadedData: LoadedData
+final class CarrierInfoViewModel: ObservableObject {
+    @Published var loadedData: LoadedData = LoadedData()
 }

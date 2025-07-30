@@ -7,7 +7,14 @@
 
 import SwiftUI
 
-struct CarrierListViewModel {
-    @Binding var stateProperty: StateProperties
-    @Binding var loadedData: LoadedData
+final class CarrierListViewModel: ObservableObject, @unchecked Sendable {
+    @Published var loadedData: LoadedData = LoadedData()
+    
+    var networkService: TravelScheduleNetAccess = TravelScheduleNetAccess()
+    
+    func loadSegments(codeIdFrom: String, codeIdTo: String) {
+        Task { @MainActor in
+            loadedData.segments = await networkService.getBetweenStationsSchedule(codeIdFrom: codeIdFrom, codeIdTo: codeIdTo)
+        }
+    }
 }

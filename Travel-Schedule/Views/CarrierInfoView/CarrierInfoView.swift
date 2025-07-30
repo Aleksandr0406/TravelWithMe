@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct CarrierInfoView: View {
-    let viewModel: CarrierInfoViewModel
+    @StateObject private var viewModel = CarrierInfoViewModel()
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: .zero) {
             AsyncImage(url: URL(string: viewModel.loadedData.singleSegment?.logo ?? "")) { state in
                 switch state {
                 case .success(let image):
@@ -33,7 +33,7 @@ struct CarrierInfoView: View {
                 .font(.system(size: 24, weight: .bold))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 16)
-            VStack(spacing: 0) {
+            VStack(spacing: .zero) {
                 Text("E-mail")
                     .font(.system(size: 17, weight: .regular))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -43,7 +43,7 @@ struct CarrierInfoView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(height: 60)
-            VStack(spacing: 0) {
+            VStack(spacing: .zero) {
                 Text("Телефон")
                     .font(.system(size: 17, weight: .regular))
                     .frame(maxWidth: .infinity, alignment: .leading)

@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct SettingsView: View {
-    let viewModel: SettingsViewModel
+    @StateObject var viewModel: SettingsViewModel = SettingsViewModel()
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     var body: some View {
         VStack {
-            DarkThemeHStackView(viewModel: viewModel)
-            UserAgreementHStackView(viewModel: viewModel)
+            DarkThemeHStackView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel)
+            UserAgreementHStackView(path: $path)
             Spacer()
             Text("Приложение использует API «Яндекс.Расписания»\nВерсия 1.0 (beta)")
                 .font(.system(size: 12, weight: .regular))
@@ -25,9 +27,8 @@ struct SettingsView: View {
 }
 
 private struct DarkThemeHStackView: View {
-    @State private var isEnabled: Bool = false
-    
-    let viewModel: SettingsViewModel
+    @ObservedObject var viewModel: SettingsViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
     
     var body: some View {
         HStack {
@@ -35,10 +36,10 @@ private struct DarkThemeHStackView: View {
                 .font(.system(size: 17, weight: .regular))
                 .frame(maxWidth: .infinity,maxHeight: 60, alignment: .leading)
             Spacer()
-            Toggle("", isOn: $isEnabled)
-                .onChange(of: isEnabled)
+            Toggle("", isOn: $viewModel.isEnabled)
+                .onChange(of: viewModel.isEnabled)
             {
-                viewModel.stateProperty.colorScheme = isEnabled ? .dark : .light
+                tabScreenViewModel.colorScheme = viewModel.isEnabled ? .dark : .light
             }
         }
         .padding([.leading, .trailing], 16)
@@ -46,7 +47,7 @@ private struct DarkThemeHStackView: View {
 }
 
 private struct UserAgreementHStackView: View {
-    let viewModel: SettingsViewModel
+    @Binding var path: NavigationPath
     
     var body: some View {
         HStack {
@@ -57,7 +58,7 @@ private struct UserAgreementHStackView: View {
             Image(systemName: "chevron.right")
         }
         .onTapGesture {
-            viewModel.stateProperty.path.append("UserAgreement")
+            path.append("UserAgreement")
         }
         .padding(.leading, 16)
         .padding(.trailing, 18)

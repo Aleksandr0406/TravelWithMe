@@ -17,23 +17,29 @@ struct TravelScheduleNetAccess {
             )
             return client
         } catch {
-            print("Error")
+            print("TravelScheduleNetAccess client Error")
             return nil
         }
     }()
     
-    @Binding var loadedData: LoadedData
-    
-    func getBetweenStationsSchedule(codeIdFrom: String, codeIdTo: String) {
-        guard let client else { return }
+    func getBetweenStationsSchedule(codeIdFrom: String, codeIdTo: String) async -> [Segment] {
+        guard let client else {
+            print("getBetweenStationsSchedule error")
+            return []
+        }
         let service = TravelScheduleService(
             client: client,
-            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
+            apikey: Constants.api
         )
         
-        Task {
+        var newSegments: [Segment] = []
+        
+        do {
             let betweenStationsSchedule = try await service.getBetweenStationsSchedule(from: codeIdFrom, to: codeIdTo)
-            guard let segments = betweenStationsSchedule.segments else { return }
+            guard let segments = betweenStationsSchedule.segments else {
+                print("getBetweenStationsSchedule error")
+                return []
+            }
             
             segments.forEach {
                 let departureDate = $0.departure
@@ -48,21 +54,14 @@ struct TravelScheduleNetAccess {
                 let carrierPhone = $0.thread?.carrier?.phone
                 let carrierEmail = $0.thread?.carrier?.email
                 
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "HH:mm:ss"
-                let dateDeparture = dateFormatter.date(from: departureDate ?? "")
-                let dateArrival = dateFormatter.date(from: arrivalDate ?? "")
-                dateFormatter.dateFormat = "HH:mm"
-                let shortStringDepDate = dateFormatter.string(from: dateDeparture ?? Date())
-                let shortStringArrDate = dateFormatter.string(from: dateArrival ?? Date())
+                let dateDeparture = FormatterFactory.timeFormatter.date(from: departureDate ?? "")
+                let dateArrival = FormatterFactory.timeFormatter.date(from: arrivalDate ?? "")
                 
-                let dateFormatterForStartDate = DateFormatter()
-                dateFormatterForStartDate.dateFormat = "yyyy.MM.dd"
-                let dateStart = dateFormatterForStartDate.date(from: startDate ?? "")
-                dateFormatterForStartDate.locale = Locale(identifier: "ru_RU")
-                dateFormatterForStartDate.dateStyle = .long
-                dateFormatterForStartDate.dateFormat = "dd MMMM"
-                let dateStartString = dateFormatterForStartDate.string(from: dateStart ?? Date())
+                let shortStringDepDate = FormatterFactory.shortTimeFormatter.string(from: dateDeparture ?? Date())
+                let shortStringArrDate = FormatterFactory.shortTimeFormatter.string(from: dateArrival ?? Date())
+                
+                let dateStart = FormatterFactory.dateFormatter.date(from: startDate ?? "")
+                let dateStartString = FormatterFactory.shortDateFormatter.string(from: dateStart ?? Date())
                 
                 let hours = (duration ?? 0) / 3600
                 var textDuration: String
@@ -87,29 +86,48 @@ struct TravelScheduleNetAccess {
                     logo: logo ?? "",
                     hasTransfer: hasTransfer ?? false
                 )
-                loadedData.segments.append(segment)
+                newSegments.append(segment)
             }
+        } catch {
+            print("Ошибка при получении расписания: \(error.localizedDescription)")
         }
+        return newSegments
     }
     
-    func getStationsList() {
-        guard let client = client else { return }
+    func getStationsList() async -> [Settlement] {
+        guard let client = client else {
+            print("TravelScheduleNetAccess getStationsList: client: error")
+            return []
+        }
         let service = TravelScheduleService(
             client: client,
-            apikey: "2687cbe0-00bc-46ff-a210-539299d1c7ae"
+            apikey: Constants.api
         )
         
-        Task {
+        var newSettlements: [Settlement] = []
+        do {
             let stationsList = try await service.getStationsList()
-            guard let countries = stationsList.countries else { return }
+            guard let countries = stationsList.countries else {
+                print("TravelScheduleNetAccess getStationsList: countries: error")
+                return []
+            }
             for country in countries {
                 if country.title == "Россия" {
-                    guard let regions = country.regions else { return }
+                    guard let regions = country.regions else {
+                        print("TravelScheduleNetAccess getStationsList: regions: error")
+                        return []
+                    }
                     for region in regions {
                         if region.title == "Москва и Московская область" || region.title == "Санкт-Петербург и Ленинградская область" {
-                            guard let settlements = region.settlements else { return }
+                            guard let settlements = region.settlements else {
+                                print("TravelScheduleNetAccess getStationsList: settlements: error")
+                                return []
+                            }
                             for settlement in settlements {
-                                guard let stations = settlement.stations else { return  }
+                                guard let stations = settlement.stations else {
+                                    print("TravelScheduleNetAccess getStationsList: stations: error")
+                                    return []
+                                }
                                 var filterStations: [Station] = []
                                 for station in stations {
                                     let stationTitle = station.title
@@ -125,13 +143,16 @@ struct TravelScheduleNetAccess {
                                         code: settlement.codes?.yandex_code ?? "",
                                         stations: filterStations
                                     )
-                                    loadedData.settlement.append(settlement)
+                                    newSettlements.append(settlement)
                                 }
                             }
                         }
                     }
                 }
             }
+        } catch {
+            print("Ошибка при получении списка станций: \(error.localizedDescription)")
         }
+        return newSettlements
     }
 }

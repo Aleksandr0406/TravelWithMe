@@ -8,6 +8,6 @@
 import SwiftUI
 import Combine
 
-struct StoriesViewModel {
-    @Binding var stateProperty: StateProperties
+final class StoriesViewModel: ObservableObject {
+    @Published var stateProperty: StateProperties = StateProperties()
 }

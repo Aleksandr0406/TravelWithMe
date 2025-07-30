@@ -10,24 +10,19 @@ import SwiftUI
 struct TabScreenView: View {
     @State private var stateProperty: StateProperties = StateProperties()
     @State private var loadedData: LoadedData = LoadedData()
-    
-    private var travelScheduleNetAccess: TravelScheduleNetAccess {
-        TravelScheduleNetAccess(loadedData: $loadedData)
-    }
+    @State var path: NavigationPath = NavigationPath()
+    @StateObject var viewModel: TabScreenViewModel = TabScreenViewModel()
     
     var body: some View {
-        NavigationStack(path: $stateProperty.path) {
+        NavigationStack(path: $path) {
             TabView {
-                MainScreenView(
-                    viewModel: MainScreenViewModel(stateProperty: $stateProperty, loadedData: $loadedData),
-                    storiesViewModel: StoriesViewModel(stateProperty: $stateProperty)
-                )
+                MainScreenView(tabScreenViewModel: viewModel, path: $path)
                 .tabItem {
                     Image(.main)
                         .renderingMode(.template)
                 }
                 .toolbarBackground(.visible, for: .tabBar)
-                SettingsView(viewModel: SettingsViewModel(stateProperty: $stateProperty))
+                SettingsView(tabScreenViewModel: viewModel, path: $path)
                     .tabItem {
                         Image(.options)
                             .renderingMode(.template)
@@ -37,24 +32,21 @@ struct TabScreenView: View {
             .accentColor(.darkWhite)
             .navigationDestination(for: String.self) { value in
                 if value == "CitiesList" {
-                    CitiesListView(viewModel: CitiesListViewModel(stateProperty: $stateProperty, loadedData: $loadedData))
+                    CitiesListView(path: $path)
                 } else if value == "CarrierList" {
-                    CarrierListView(viewModel: CarrierListViewModel(stateProperty: $stateProperty, loadedData: $loadedData))
+                    CarrierListView(tabScreenViewModel: viewModel, path: $path)
                 } else if value == "TimeOptions" {
-                    TimeOptionsView(viewModel: TimeOptionsViewModel(stateProperty: $stateProperty, loadedData: $loadedData))
+                    TimeOptionsView(tabScreenViewModel: viewModel, path: $path)
                 } else if value == "CarrierInfo" {
-                    CarrierInfoView(viewModel: CarrierInfoViewModel(loadedData: $loadedData))
+                    CarrierInfoView()
                 } else if value == "UserAgreement" {
-                    UserAgreementView(viewModel: UserAgreementViewModel(stateProperty: $stateProperty))
+                    UserAgreementView()
                 } else {
-                    StationsListView(viewModel: StationsListViewModel(stateProperty: $stateProperty, loadedData: $loadedData), city: value)
+                    StationsListView(tabScreenViewModel: viewModel, path: $path, city: value)
                 }
             }
         }
         .accentColor(.darkWhite)
-        .environment(\.colorScheme, stateProperty.colorScheme)
-        .onAppear {
-            travelScheduleNetAccess.getStationsList()
-        }
+        .environment(\.colorScheme, viewModel.colorScheme)
     }
 }

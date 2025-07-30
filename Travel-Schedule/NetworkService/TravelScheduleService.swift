@@ -132,10 +132,3 @@ actor TravelScheduleService: TravelScheduleServiceProtocol {
     }
 }
 
-enum CustomError: Error {
-    case JsonFailed(String)
-    case ClientNil
-    case ServerError
-    case InternetError
-    case notFound
-}

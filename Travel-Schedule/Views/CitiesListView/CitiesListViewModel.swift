@@ -7,7 +7,16 @@
 
 import SwiftUI
 
-struct CitiesListViewModel {
-    @Binding var stateProperty: StateProperties
-    @Binding var loadedData: LoadedData
+final class CitiesListViewModel: ObservableObject, @unchecked Sendable {
+    @Published var stateProperty: StateProperties = StateProperties()
+    @Published var loadedData: LoadedData = LoadedData()
+    
+    var networkService: TravelScheduleNetAccess = TravelScheduleNetAccess()
+    
+    init() {
+        Task { @MainActor in
+            loadedData.settlements = await networkService.getStationsList()
+        }
+    }
 }
+

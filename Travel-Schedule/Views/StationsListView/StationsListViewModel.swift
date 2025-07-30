@@ -7,8 +7,16 @@
 
 import SwiftUI
 
-struct StationsListViewModel {
-    @State var searchTextField: String = ""
-    @Binding var stateProperty: StateProperties
-    @Binding var loadedData: LoadedData
+final class StationsListViewModel: ObservableObject, @unchecked Sendable {
+    @Published var searchTextField: String = ""
+    @Published var stateProperty: StateProperties = StateProperties()
+    @Published var loadedData: LoadedData = LoadedData()
+    
+    var networkService: TravelScheduleNetAccess = TravelScheduleNetAccess()
+    
+    init() {
+        Task { @MainActor in
+            loadedData.settlements = await networkService.getStationsList()
+        }
+    }
 }

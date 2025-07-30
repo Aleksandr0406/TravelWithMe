@@ -7,15 +7,25 @@
 
 import SwiftUI
 
-struct TimeOptionsViewModel {
-    @State var isTransferOptionYesSelect: Bool = false
-    @State var isTransferOptionNoSelect: Bool = false
+final class TimeOptionsViewModel: ObservableObject, @unchecked Sendable {
+    @Published var isTransferOptionYesSelect: Bool = false
+    @Published var isTransferOptionNoSelect: Bool = false
+    @Published var isMorningTimeSelect: Bool = false
+    @Published var isDayTimeSelect: Bool = false
+    @Published var isEveningTimeSelect: Bool = false
+    @Published var isNightTimeSelect: Bool = false
+    @Published var filterSegmentsMorningTime: [Segment] = []
+    @Published var filterSegmentsDayTime: [Segment] = []
+    @Published var filterSegmentsEveningTime: [Segment] = []
+    @Published var filterSegmentsNightTime: [Segment] = []
+    @Published var stateProperty: StateProperties = StateProperties()
+    @Published var loadedData: LoadedData = LoadedData()
     
-    @Binding var stateProperty: StateProperties
-    @Binding var loadedData: LoadedData
+    let networkService: TravelScheduleNetAccess = TravelScheduleNetAccess()
     
-    func filterTime(minInterval: Int, maxInterval: Int) {
-        let calculatedSegments = loadedData.segments.filter {
+    func filterTime(minInterval: Int, maxInterval: Int, codeIdFrom: String, codeIdTo: String) async -> [Segment] {
+        let loadedSegments = await networkService.getBetweenStationsSchedule(codeIdFrom: codeIdFrom, codeIdTo: codeIdTo)
+        let calculatedSegments = loadedSegments.filter {
             let charactersDepartureStringDateArray = $0.departureDate.map { $0 }
             var departureDateInMinutes: Int = 0
             var hours: String = ""
@@ -34,48 +44,49 @@ struct TimeOptionsViewModel {
             return departureDateInMinutes > minIntervalInMinutes && departureDateInMinutes < maxIntervalInMinutes
         }
         
-        if stateProperty.isMorningTimeSelect && minInterval == 6 {
-            stateProperty.filterSegmentsMorningTime = calculatedSegments
+        if isMorningTimeSelect && minInterval == 6 {
+            filterSegmentsMorningTime = calculatedSegments
         }
         
-        if stateProperty.isMorningTimeSelect == false && minInterval == 6 {
-            stateProperty.filterSegmentsMorningTime = []
+        if isMorningTimeSelect == false && minInterval == 6 {
+            filterSegmentsMorningTime = []
         }
         
-        if stateProperty.isDayTimeSelect && minInterval == 12 {
-            stateProperty.filterSegmentsDayTime = calculatedSegments
+        if isDayTimeSelect && minInterval == 12 {
+            filterSegmentsDayTime = calculatedSegments
         }
         
-        if stateProperty.isDayTimeSelect == false && minInterval == 12 {
-            stateProperty.filterSegmentsDayTime = []
+        if isDayTimeSelect == false && minInterval == 12 {
+            filterSegmentsDayTime = []
         }
         
-        if stateProperty.isEveningTimeSelect && minInterval == 18 {
-            stateProperty.filterSegmentsEveningTime = calculatedSegments
+        if isEveningTimeSelect && minInterval == 18 {
+            filterSegmentsEveningTime = calculatedSegments
         }
         
-        if stateProperty.isEveningTimeSelect == false && minInterval == 18 {
-            stateProperty.filterSegmentsEveningTime = []
+        if isEveningTimeSelect == false && minInterval == 18 {
+            filterSegmentsEveningTime = []
         }
         
-        if stateProperty.isNightTimeSelect && minInterval == 0 {
-            stateProperty.filterSegmentsNightTime = calculatedSegments
+        if isNightTimeSelect && minInterval == 0 {
+            filterSegmentsNightTime = calculatedSegments
         }
         
-        if stateProperty.isNightTimeSelect == false && minInterval == 0 {
-            stateProperty.filterSegmentsNightTime = []
+        if isNightTimeSelect == false && minInterval == 0 {
+            filterSegmentsNightTime = []
         }
         
-        stateProperty.filteredSegments = stateProperty.filterSegmentsMorningTime + stateProperty.filterSegmentsDayTime + stateProperty.filterSegmentsEveningTime + stateProperty.filterSegmentsNightTime
+        let filteredSegments = filterSegmentsMorningTime + filterSegmentsDayTime + filterSegmentsEveningTime + filterSegmentsNightTime
+        return filteredSegments
     }
     
-    func checkOptionTime() {
-        if stateProperty.isMorningTimeSelect == false && stateProperty.isDayTimeSelect == false &&
-            stateProperty.isEveningTimeSelect == false && stateProperty.isNightTimeSelect == false {
+    func checkOptionTime() -> Bool {
+        if isMorningTimeSelect == false && isDayTimeSelect == false &&
+            isEveningTimeSelect == false && isNightTimeSelect == false {
             stateProperty.shouldHide = true
-            stateProperty.showTimeSpecifyRedDot = false
+            return false
         } else {
-            stateProperty.showTimeSpecifyRedDot = true
+            return true
         }
     }
     

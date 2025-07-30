@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct SettingsViewModel {
-    @Binding var stateProperty: StateProperties
+final class SettingsViewModel: ObservableObject {
+    @Published var isEnabled: Bool = false
+
 }

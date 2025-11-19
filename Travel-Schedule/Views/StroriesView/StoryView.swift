@@ -26,7 +26,3 @@ struct StoryView: View {
         }
     }
 }
-
-#Preview {
-    StoryView(story: .story11)
-}

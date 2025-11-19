@@ -7,69 +7,50 @@
 import SwiftUI
 
 struct MainScreenView: View {
-    @State private var tabSelection: Int = 0
-    @State private var indexOfGroupStories: Int = 0
-    @State private var indexesOfViewStories: [Int] = []
-    @Binding var stateProperty: StateProperties
+    @StateObject private var viewModel: MainScreenViewModel = MainScreenViewModel()
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     var body: some View {
         VStack {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    MiniStoriesView(
-                        tabSelection: $tabSelection,
-                        indexOfGroupStories: $indexOfGroupStories,
-                        indexesOfViewStories: $indexesOfViewStories,
-                        stateProperty: $stateProperty
-                    )
-                    .fullScreenCover(isPresented: $stateProperty.isPresentingStory) {
-                        StoriesView(
-                            indexOfGroupStories: $indexOfGroupStories,
-                            stateProperty: $stateProperty,
-                            tabSelection: $tabSelection
-                        )
-                    }
+                    MiniStoriesView(viewModel: viewModel)
+                        .fullScreenCover(isPresented: $viewModel.stateProperty.isPresentingStory) {
+                            StoriesView(mainViewModel: viewModel)
+                        }
                 }
                 .frame(height: 140)
                 .padding(.leading, 16)
             }
             ZStack {
                 BlueRoundedRectangleView()
-                HStackElementsView(stateProperty: $stateProperty)
+                HStackElementsView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel, path: $path)
             }
             .frame(width: 311, height: 96)
             .padding(.top, 44)
-            ButtonSearchView(stateProperty: $stateProperty)
+            ButtonSearchView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel, path: $path)
             Spacer()
         }
     }
 }
 
 private struct MiniStoriesView: View {
-    @Binding var tabSelection: Int
-    @Binding var indexOfGroupStories: Int
-    @Binding var indexesOfViewStories: [Int]
-    @Binding var stateProperty: StateProperties
-    
-    private let storiesThemes: [UIImage] = [
-        UIImage(resource: .mainTheme1),
-        UIImage(resource: .mainTheme2),
-        UIImage(resource: .mainTheme3)
-    ]
+    @ObservedObject var viewModel: MainScreenViewModel
     
     var body: some View {
-        ForEach(0..<storiesThemes.count, id: \.self) { index in
-            let isStoryViewed = indexesOfViewStories.contains(index)
-            Image(uiImage: storiesThemes[index])
+        ForEach(0..<viewModel.storiesThemes.count, id: \.self) { index in
+            let isStoryViewed = viewModel.indexesOfViewStories.contains(index)
+            Image(uiImage: viewModel.storiesThemes[index])
                 .frame(width: 92)
                 .clipShape(.rect(cornerRadius: 16))
                 .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.blue, lineWidth: isStoryViewed ? 0 : 4))
                 .opacity(isStoryViewed ? 0.5 : 1)
                 .onTapGesture {
-                    indexOfGroupStories = index
-                    indexesOfViewStories.append(indexOfGroupStories)
-                    tabSelection = index
-                    stateProperty.isPresentingStory = true
+                    viewModel.stateProperty.indexOfGroupStories = index
+                    viewModel.indexesOfViewStories.append(viewModel.stateProperty.indexOfGroupStories)
+                    viewModel.stateProperty.tabSelection = index
+                    viewModel.stateProperty.isPresentingStory = true
                 }
         }
     }
@@ -84,16 +65,18 @@ private struct BlueRoundedRectangleView: View {
 }
 
 private struct HStackElementsView: View {
-    @Binding var stateProperty: StateProperties
+    @ObservedObject var viewModel: MainScreenViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     var body: some View {
         HStack(spacing: 16) {
             ZStack {
                 WhiteRoundedRectangleView()
-                ButtonsFromToView(stateProperty: $stateProperty)
+                ButtonsFromToView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel, path: $path)
             }
             .frame(width: 259, height: 96)
-            ButtonReversedView(stateProperty: $stateProperty)
+            ButtonReversedView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel)
         }
     }
 }
@@ -107,63 +90,59 @@ private struct WhiteRoundedRectangleView: View {
 }
 
 private struct ButtonsFromToView: View {
-    @Binding var stateProperty: StateProperties
+    @ObservedObject var viewModel: MainScreenViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     var body: some View {
-        VStack(spacing: 0) {
-            TextFromView(stateProperty: $stateProperty)
-            TextToView(stateProperty: $stateProperty)
+        VStack(spacing: .zero) {
+            TextFromView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel, path: $path)
+            TextToView(viewModel: viewModel, tabScreenViewModel: tabScreenViewModel, path: $path)
         }
     }
 }
 
 private struct TextFromView: View {
-    @Binding var stateProperty: StateProperties
-    
-    private var finalDestination: String {
-        return stateProperty.cityFrom + " (" + stateProperty.stationFrom + ")"
-    }
+    @ObservedObject var viewModel: MainScreenViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     var body: some View {
-        Text(stateProperty.isFromPointShow ? finalDestination : "Откуда")
+        Text(tabScreenViewModel.isFromPointShow ? tabScreenViewModel.finalDestinationFrom : "Откуда")
             .lineLimit(1)
             .font(.system(size: 17, weight: .regular))
-            .foregroundStyle(stateProperty.isFromPointShow  ? .black : .gray)
+            .foregroundStyle(tabScreenViewModel.isFromPointShow  ? .black : .gray)
             .padding(.leading, 16)
             .frame(width: 259, height: 48, alignment: .leading)
             .onTapGesture {
-                stateProperty.isFromPointSelected = true
-                stateProperty.path.append("CitiesList")
+                tabScreenViewModel.isFromPointSelected = true
+                path.append("CitiesList")
             }
     }
 }
 
 private struct TextToView: View {
-    @Binding var stateProperty: StateProperties
-    
-    private var finalDestination: String {
-        return stateProperty.cityTo + " (" + stateProperty.stationTo + ")"
-    }
+    @ObservedObject var viewModel: MainScreenViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
     var body: some View {
-        Text(stateProperty.isToPointShow ? finalDestination : "Куда")
+        Text(tabScreenViewModel.isToPointShow ? tabScreenViewModel.finalDestinationTo : "Куда")
             .lineLimit(1)
             .font(.system(size: 17, weight: .regular))
-            .foregroundStyle(stateProperty.isToPointShow ? .black : .gray)
+            .foregroundStyle(tabScreenViewModel.isToPointShow ? .black : .gray)
             .padding(.leading, 16)
             .frame(width: 259, height: 48, alignment: .leading)
             .onTapGesture {
-                stateProperty.isToPointSelected = true
-                stateProperty.path.append("CitiesList")
+                tabScreenViewModel.isToPointSelected = true
+                path.append("CitiesList")
             }
     }
 }
 
 private struct ButtonReversedView: View {
-    @Binding var stateProperty: StateProperties
-    
-    @State private var cityHelp: String = ""
-    @State private var stationHelp: String = ""
+    @ObservedObject var viewModel: MainScreenViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
     
     var body: some View {
         Button(action: swapDestinations) {
@@ -175,23 +154,29 @@ private struct ButtonReversedView: View {
     }
     
     private func swapDestinations() {
-        cityHelp = stateProperty.cityFrom
-        stationHelp = stateProperty.stationFrom
-        stateProperty.cityFrom = stateProperty.cityTo
-        stateProperty.stationFrom = stateProperty.stationTo
-        stateProperty.cityTo = cityHelp
-        stateProperty.stationTo = stationHelp
+        viewModel.cityHelp = tabScreenViewModel.cityFrom
+        viewModel.stationHelp = tabScreenViewModel.stationFrom ?? ""
+        tabScreenViewModel.cityFrom = tabScreenViewModel.cityTo
+        tabScreenViewModel.stationFrom = tabScreenViewModel.stationTo
+        tabScreenViewModel.cityTo = viewModel.cityHelp
+        tabScreenViewModel.stationTo = viewModel.stationHelp
     }
 }
 
 private struct ButtonSearchView: View {
-    @Binding var stateProperty: StateProperties
+    @ObservedObject var viewModel: MainScreenViewModel
+    @ObservedObject var tabScreenViewModel: TabScreenViewModel
+    @Binding var path: NavigationPath
     
-    var isHidden = false
+    var travelScheduleNetAccess: TravelScheduleNetAccess = TravelScheduleNetAccess()
+    
+    var isHidden: Bool {
+        tabScreenViewModel.stationTo != nil && tabScreenViewModel.stationFrom != nil
+    }
     
     var body: some View {
         Button("Найти") {
-            stateProperty.path.append("CarrierList")
+            path.append("CarrierList")
         }
         .frame(width: 150, height: 60)
         .background(.blue)
@@ -199,12 +184,8 @@ private struct ButtonSearchView: View {
         .foregroundStyle(.white)
         .font(.system(size: 17, weight: .bold))
         .padding(.top, 16)
-        .opacity(isHidden ? 0 : 1)
+        .opacity(isHidden ? 1 : 0)
     }
-}
-
-#Preview {
-    MainScreenView(stateProperty: .constant(StateProperties()))
 }
 
 

@@ -2,31 +2,16 @@ import SwiftUI
 import Combine
 
 struct StoriesView: View {
-    @State private var indexCalc = 0
-    @Binding var indexOfGroupStories: Int
-    @Binding var stateProperty: StateProperties
-    @Binding var tabSelection: Int
+    @ObservedObject var mainViewModel: MainScreenViewModel
     
     var body: some View {
-        TabView(selection: $tabSelection) {
-            FullStoryConstructorView(
-                fullStoryIndex: 0,
-                stateProperty: $stateProperty,
-                tabSelection: $tabSelection,
-                indexOfGroupStories: $indexOfGroupStories
-            ).tag(0)
-            FullStoryConstructorView(
-                fullStoryIndex: 1,
-                stateProperty: $stateProperty,
-                tabSelection: $tabSelection,
-                indexOfGroupStories: $indexOfGroupStories
-            ).tag(1)
-            FullStoryConstructorView(
-                fullStoryIndex: 2,
-                stateProperty: $stateProperty,
-                tabSelection: $tabSelection,
-                indexOfGroupStories: $indexOfGroupStories
-            ).tag(2)
+        TabView(selection: $mainViewModel.stateProperty.tabSelection) {
+            FullStoryConstructorView(fullStoryIndex: 0, mainViewModel: mainViewModel)
+                .tag(0)
+            FullStoryConstructorView(fullStoryIndex: 1, mainViewModel: mainViewModel)
+                .tag(1)
+            FullStoryConstructorView(fullStoryIndex: 2, mainViewModel: mainViewModel)
+                .tag(2)
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
         .ignoresSafeArea()
@@ -48,31 +33,26 @@ private struct FullStoryConstructorView: View {
         }
     }
     
+    
+    @State private var indexCalc = 0
+    @State var progress: CGFloat = 0
+    @State var cancellable: Cancellable?
+    @State var timer: Timer.TimerPublisher
+    @ObservedObject var mainViewModel: MainScreenViewModel
+    
     private var stories: [FullStory] = [.fullStory1, .fullStory2, .fullStory3]
     private let configuration: Configuration
     private var fullStoryIndex: Int
     private var currentStory: Story { stories[fullStoryIndex].stories[currentStoryIndex] }
     private var currentStoryIndex: Int { Int(progress * CGFloat(stories[fullStoryIndex].stories.count)) }
     
-    @State private var progress: CGFloat = 0
-    @State private var timer: Timer.TimerPublisher
-    @State private var cancellable: Cancellable?
-    @Binding var stateProperty: StateProperties
-    @Binding var tabSelection: Int
-    @Binding var indexOfGroupStories: Int
-    
     init(
-        fullStoryIndex: Int,
-        stateProperty: Binding<StateProperties>,
-        tabSelection: Binding<Int>,
-        indexOfGroupStories: Binding<Int>
+        fullStoryIndex: Int, mainViewModel: MainScreenViewModel
     ) {
         self.fullStoryIndex = fullStoryIndex
         configuration = Configuration(storiesCount: stories[fullStoryIndex].stories.count)
         timer = Self.createTimer(configuration: configuration)
-        _stateProperty = stateProperty
-        _tabSelection = tabSelection
-        _indexOfGroupStories = indexOfGroupStories
+        _mainViewModel = ObservedObject(wrappedValue: mainViewModel)
     }
     
     var body: some View {
@@ -96,7 +76,7 @@ private struct FullStoryConstructorView: View {
                         resetTimer()
                     }
             }
-            CloseButton(action: { stateProperty.isPresentingStory = false })
+            CloseButton(action: { mainViewModel.stateProperty.isPresentingStory = false })
                 .padding(.top, 57)
                 .padding(.trailing, 12)
         }
@@ -121,11 +101,11 @@ private struct FullStoryConstructorView: View {
             withAnimation {
                 progress = CGFloat(nextStoryIndex) / CGFloat(storiesCount)
             }
-        } else if indexOfGroupStories < stories.count - 1 {
-            tabSelection = indexOfGroupStories + 1
-            indexOfGroupStories += 1
+        } else if mainViewModel.stateProperty.indexOfGroupStories < stories.count - 1 {
+            mainViewModel.stateProperty.tabSelection = mainViewModel.stateProperty.indexOfGroupStories + 1
+            mainViewModel.stateProperty.indexOfGroupStories += 1
         } else {
-            stateProperty.isPresentingStory = false
+            mainViewModel.stateProperty.isPresentingStory = false
         }
     }
     
@@ -150,11 +130,11 @@ private struct FullStoryConstructorView: View {
             withAnimation {
                 progress = CGFloat(nextStoryIndex) / CGFloat(storiesCount)
             }
-        } else if indexOfGroupStories < stories.count - 1 {
-            tabSelection = indexOfGroupStories + 1
-            indexOfGroupStories += 1
+        } else if mainViewModel.stateProperty.indexOfGroupStories < stories.count - 1 {
+            mainViewModel.stateProperty.tabSelection = mainViewModel.stateProperty.indexOfGroupStories + 1
+            mainViewModel.stateProperty.indexOfGroupStories += 1
         } else {
-            stateProperty.isPresentingStory = false
+            mainViewModel.stateProperty.isPresentingStory = false
         }
     }
     
@@ -171,11 +151,11 @@ private struct FullStoryConstructorView: View {
             withAnimation {
                 progress = CGFloat(previousStoryIndex) / CGFloat(storiesCount)
             }
-        } else if indexOfGroupStories > 0 {
-            tabSelection = indexOfGroupStories - 1
-            indexOfGroupStories -= 1
+        } else if mainViewModel.stateProperty.indexOfGroupStories > 0 {
+            mainViewModel.stateProperty.tabSelection = mainViewModel.stateProperty.indexOfGroupStories - 1
+            mainViewModel.stateProperty.indexOfGroupStories -= 1
         } else {
-            stateProperty.isPresentingStory = false
+            mainViewModel.stateProperty.isPresentingStory = false
         }
     }
     
@@ -188,12 +168,4 @@ private struct FullStoryConstructorView: View {
     private static func createTimer(configuration: Configuration) -> Timer.TimerPublisher {
         Timer.publish(every: configuration.timerTickInternal, on: .main, in: .common)
     }
-}
-
-#Preview {
-    StoriesView(
-        indexOfGroupStories: .constant(0),
-        stateProperty: .constant(StateProperties()),
-        tabSelection: .constant(0)
-        )
 }

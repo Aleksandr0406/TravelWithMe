@@ -6,19 +6,29 @@
 //
 
 import SwiftUI
+import WebKit
 
 struct UserAgreementView: View {
+    let viewModel: UserAgreementViewModel = UserAgreementViewModel()
+    
     var body: some View {
-        Text("Оферта на оказание образовательных услуг дополнительного образования Яндекс.Практикум  для физических лиц")
-            .font(.system(size: 24, weight: .bold))
-            .toolbarRole(.editor)
-            .navigationTitle("Пользовательское соглашение")
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(EdgeInsets(top: 16, leading: 16, bottom: 0, trailing: 16))
-        Spacer()
+        Group {
+            if let url = URL(string: viewModel.userAgreementURL) {
+                WebView(url: url)
+            }
+        }
+        .navigationTitle("Пользовательское соглашение")
     }
 }
 
-#Preview {
-    UserAgreementView()
+private struct WebView: UIViewRepresentable {
+    let url: URL
+    
+    func makeUIView(context: Context) -> WKWebView {
+        return WKWebView()
+    }
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        let request = URLRequest(url: url)
+        webView.load(request)
+    }
 }

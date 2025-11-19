@@ -9,17 +9,20 @@ import SwiftUI
 
 struct TabScreenView: View {
     @State private var stateProperty: StateProperties = StateProperties()
+    @State private var loadedData: LoadedData = LoadedData()
+    @State var path: NavigationPath = NavigationPath()
+    @StateObject var viewModel: TabScreenViewModel = TabScreenViewModel()
     
     var body: some View {
-        NavigationStack(path: $stateProperty.path) {
+        NavigationStack(path: $path) {
             TabView {
-                MainScreenView(stateProperty: $stateProperty)
-                    .tabItem {
-                        Image(.main)
-                            .renderingMode(.template)
-                    }
-                    .toolbarBackground(.visible, for: .tabBar)
-                SettingsView(stateProperty: $stateProperty)
+                MainScreenView(tabScreenViewModel: viewModel, path: $path)
+                .tabItem {
+                    Image(.main)
+                        .renderingMode(.template)
+                }
+                .toolbarBackground(.visible, for: .tabBar)
+                SettingsView(tabScreenViewModel: viewModel, path: $path)
                     .tabItem {
                         Image(.options)
                             .renderingMode(.template)
@@ -29,25 +32,21 @@ struct TabScreenView: View {
             .accentColor(.darkWhite)
             .navigationDestination(for: String.self) { value in
                 if value == "CitiesList" {
-                    CitiesListView(stateProperty: $stateProperty)
+                    CitiesListView(path: $path)
                 } else if value == "CarrierList" {
-                    CarrierListView(stateProperty: $stateProperty)
+                    CarrierListView(tabScreenViewModel: viewModel, path: $path)
                 } else if value == "TimeOptions" {
-                    TimeOptionsView()
+                    TimeOptionsView(tabScreenViewModel: viewModel, path: $path)
                 } else if value == "CarrierInfo" {
                     CarrierInfoView()
                 } else if value == "UserAgreement" {
                     UserAgreementView()
                 } else {
-                    StationsListView(stateProperty: $stateProperty, city: value)
+                    StationsListView(tabScreenViewModel: viewModel, path: $path, city: value)
                 }
             }
         }
         .accentColor(.darkWhite)
-        .environment(\.colorScheme, stateProperty.colorScheme)
+        .environment(\.colorScheme, viewModel.colorScheme)
     }
-}
-
-#Preview {
-    TabScreenView()
 }
